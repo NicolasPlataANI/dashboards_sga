@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "estacion_peaje",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "municipio": "N/A", "proyecto": "APP Buga – Buenaventura", "fecha_avance": "2025-11-21", "OBJECTID": 14, "ID": 14.0, "UnidadFuncional": null, "Departamento": null, "CodigoInvias": null, "FechaInicioOperacion": null, "PuntoInicial": null, "DistAPuntoInicial": null, "punto_final": null, "DistAPuntoFinal": null, "longitud": null, "area": null, "AnchoPromedio": null, "IdEstacionPeaje": null, "FechaInstalacion": null, "NumeroEstacionPago": null, "TienePagoElectronico": null, "Shape.STArea()": 4104.884924985, "Shape.STLength()": 322.95735486163397 }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -76.774383304491792, 3.800035583417113 ], [ -76.774479050526907, 3.800209211805441 ], [ -76.774586206890845, 3.800175167696335 ], [ -76.774517664354747, 3.799987284621531 ], [ -76.775059484363567, 3.79979053542496 ], [ -76.774914410395169, 3.79939801782974 ], [ -76.774351551200823, 3.799610761711386 ], [ -76.774302512570259, 3.799458131878859 ], [ -76.774243653671903, 3.799474293839564 ], [ -76.774272863006715, 3.799718893436725 ], [ -76.774383304491792, 3.800035583417113 ] ] ] } }
+]
+}
