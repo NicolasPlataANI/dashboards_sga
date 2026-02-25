@@ -1,11 +1,13 @@
 import { Component, OnInit, AfterViewInit, signal } from '@angular/core';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { forkJoin, catchError, of } from 'rxjs';
+import { catchError, of } from 'rxjs';
 import * as L from 'leaflet';
 import Chart from 'chart.js/auto';
 import { Title } from '@angular/platform-browser';
 import { TreemapController, TreemapElement } from 'chartjs-chart-treemap';
+import * as fgb from 'flatgeobuf';
+
 Chart.register(TreemapController, TreemapElement);
 
 @Component({
@@ -20,16 +22,15 @@ Chart.register(TreemapController, TreemapElement);
       @if (cargando()) {
         <div [style.backgroundColor]="isDark() ? '#121212' : '#FFF9C4'" class="absolute inset-0 z-[100] flex flex-col items-center justify-center">
           <div class="w-16 h-16 border-4 border-zinc-500 border-t-yellow-500 rounded-full animate-spin"></div>
+          <p class="text-[10px] text-zinc-500 font-mono uppercase mt-4 tracking-widest animate-pulse">Decodificando binario...</p>
         </div>
       }
 
       <div class="flex-1 flex min-h-0">
-        
         <aside [style.backgroundColor]="isDark() ? '#1F1F1F' : '#FFFDE7'" 
                [style.borderColor]="isDark() ? '#333' : '#FBC02D'"
                class="w-80 border-r flex flex-col shadow-2xl z-20 flex-shrink-0 transition-colors duration-300">
           <header [style.borderColor]="isDark() ? '#333' : '#FBC02D'" class="p-6 border-b">
-            
             <div class="flex justify-between items-start mb-4">
               <img src="logoani.png" alt="Logo ANI" class="h-15 object-contain">
               <button (click)="toggleTema()" 
@@ -38,7 +39,6 @@ Chart.register(TreemapController, TreemapElement);
                 {{ isDark() ? '🌞' : '🌚' }}
               </button>
             </div>
-
             <p [style.color]="isDark() ? '#FFCD00' : '#F9A825'" class="text-[10px] uppercase tracking-widest font-bold mb-1 mt-2">Proyecto ANI</p>
             <h1 [class]="isDark() ? 'text-white' : 'text-slate-900'" class="text-xl font-black leading-tight uppercase">
               {{ info()?.nombre || '---' }}
@@ -72,17 +72,17 @@ Chart.register(TreemapController, TreemapElement);
         </main>
 
         <aside [style.backgroundColor]="isDark() ? '#1F1F1F' : '#FFFDE7'" 
-       [style.borderColor]="isDark() ? '#333' : '#FBC02D'"
-       class="w-72 border-l flex flex-col shadow-2xl z-10 flex-shrink-0 transition-colors duration-300">
-  
+               [style.borderColor]="isDark() ? '#333' : '#FBC02D'"
+               class="w-72 border-l flex flex-col shadow-2xl z-10 flex-shrink-0 transition-colors duration-300">
+          
+          <div [style.borderColor]="isDark() ? '#333' : '#FBC02D'" class="p-4 border-b">
+            <button (click)="resetZoom()" 
+                    [style.backgroundColor]="isDark() ? '#333' : '#F9A825'"
+                    class="w-full py-2 text-[10px] font-black uppercase rounded border border-zinc-500/30 text-white cursor-pointer hover:brightness-110 active:scale-95 transition-all">
+              📍 Recentrar Mapa
+            </button>
+          </div>
 
-  <div [style.borderColor]="isDark() ? '#333' : '#FBC02D'" class="p-4 border-b">
-    <button (click)="resetZoom()" 
-            [style.backgroundColor]="isDark() ? '#333' : '#F9A825'"
-            class="w-full py-2 text-[10px] font-black uppercase rounded border border-zinc-500/30 text-white cursor-pointer hover:brightness-110 active:scale-95 transition-all">
-      📍 Recentrar Mapa
-    </button>
-  </div>
           <div [style.borderColor]="isDark() ? '#333' : '#FBC02D'" class="p-4 border-b transition-colors duration-300">
             <p class="text-[9px] uppercase font-bold text-zinc-500 mb-2">Mapa Base</p>
             <div class="flex gap-1">
@@ -135,12 +135,10 @@ Chart.register(TreemapController, TreemapElement);
         <button (click)="toggleGrafica()" [style.backgroundColor]="isDark() ? '#333' : '#F9A825'" class="absolute top-2 right-2 z-10 px-3 py-1.5 rounded text-[10px] uppercase font-bold text-white border-none shadow-lg cursor-pointer">
           {{ graficaExpandida() ? 'Reducir' : 'Expandir' }}
         </button>
-
         <div class="h-full w-full pt-10 pb-2 px-2">
           <canvas id="chartActivos"></canvas>
         </div>
       </section>
-
     </div>
   `,
   styles: [`
@@ -163,38 +161,29 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
   baseUrl = '';
   
   private tileLayers: { [key: string]: L.TileLayer } = {
-    'Oscuro': L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      maxNativeZoom: 19,
-      maxZoom: 22
-    }),
-    'Satélite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxNativeZoom: 19,
-      maxZoom: 22
-    }),
-    'Calles': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxNativeZoom: 19,
-      maxZoom: 22
-    })
+    'Oscuro': L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxNativeZoom: 19, maxZoom: 22 }),
+    'Satélite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 19, maxZoom: 22 }),
+    'Calles': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxNativeZoom: 19, maxZoom: 22 })
   };
   mapaBaseActual = 'Oscuro';
 
   capasFisicas = [
-    { nombre: 'Calzadas', archivo: 'calzada.geojson', color: '#FF5733', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Puentes', archivo: 'puente.geojson', color: '#DC143C', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Túneles', archivo: 'tunel.geojson', color: '#FF69B4', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Estaciones de Peaje', archivo: 'estacion_peaje.geojson', color: '#FFFF00', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Estaciones de Pesaje', archivo: 'estacion_pesaje.geojson', color: '#FF4500', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Ciclorruta', archivo: 'ciclorruta.geojson', color: '#00FF00', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Muros', archivo: 'muro.geojson', color: '#8A2BE2', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'CCO', archivo: 'cco.geojson', color: '#FF00FF', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Bermas', archivo: 'berma.geojson', color: '#FFD700', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Cunetas', archivo: 'cuneta.geojson', color: '#00FFFF', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Defensa Vial', archivo: 'defensa_vial.geojson', color: '#FF1493', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Dispositivos ITS', archivo: 'dispositivo_its.geojson', color: '#9400D3', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Luminarias', archivo: 'luminarias.geojson', color: '#7FFF00', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Señales Verticales', archivo: 'senal_vertical.geojson', color: '#1E90FF', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Separador', archivo: 'separador.geojson', color: '#32CD32', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Zonas de servicio', archivo: 'zona_servicio.geojson', color: '#FFA500', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 }
+    { nombre: 'Calzadas', archivo: 'calzada.fgb', color: '#FF5733', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Puentes', archivo: 'puente.fgb', color: '#DC143C', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Túneles', archivo: 'tunel.fgb', color: '#FF69B4', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Estaciones de Peaje', archivo: 'estacion_peaje.fgb', color: '#FFFF00', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Estaciones de Pesaje', archivo: 'estacion_pesaje.fgb', color: '#FF4500', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Ciclorruta', archivo: 'ciclorruta.fgb', color: '#00FF00', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Muros', archivo: 'muro.fgb', color: '#8A2BE2', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'CCO', archivo: 'cco.fgb', color: '#FF00FF', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Bermas', archivo: 'berma.fgb', color: '#FFD700', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Cunetas', archivo: 'cuneta.fgb', color: '#00FFFF', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Defensa Vial', archivo: 'defensa_vial.fgb', color: '#FF1493', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Dispositivos ITS', archivo: 'dispositivo_its.fgb', color: '#9400D3', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Luminarias', archivo: 'luminarias.fgb', color: '#7FFF00', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Señales Verticales', archivo: 'senal_vertical.fgb', color: '#1E90FF', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Separador', archivo: 'separador.fgb', color: '#32CD32', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
+    { nombre: 'Zonas de servicio', archivo: 'zona_servicio.fgb', color: '#FFA500', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 }
   ];
 
   constructor(private http: HttpClient, private titleService: Title) {}
@@ -220,39 +209,78 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() { this.initMap(); }
 
   private initMap() {
-    this.map = L.map('map', { zoomControl: false }).setView([4.6, -74.3], 7);
+    this.map = L.map('map', { zoomControl: false, maxZoom: 22 }).setView([4.6, -74.3], 7);
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
     this.tileLayers[this.mapaBaseActual].addTo(this.map);
     this.cargarGeometrias();
   }
 
-  private cargarGeometrias() {
-    const peticiones = this.capasFisicas.map(capa => this.http.get(`${this.baseUrl}/${capa.archivo}`).pipe(catchError(() => of(null))));
-    forkJoin(peticiones).subscribe({
-      next: (respuestas: any[]) => {
-        let bbox = L.latLngBounds([]);
-        this.totalActivos = 0;
-        respuestas.forEach((geoData, idx) => {
-          const capaRef = this.capasFisicas[idx];
-          if (geoData?.features) {
-            capaRef.cantidad = geoData.features.length;
-            this.totalActivos += capaRef.cantidad;
-            capaRef.instance = L.geoJSON(geoData, {
-              style: { color: capaRef.color, weight: 3, opacity: 0.9 },
-              pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 3, color: capaRef.color, fillColor: capaRef.color, fillOpacity: 0.8 })
-            });
-            if (capaRef.visible) { capaRef.instance.addTo(this.map); bbox.extend(capaRef.instance.getBounds()); }
-          }
-        });
-        if (bbox.isValid()) {
-          this.initialBounds = bbox; // Guardamos la referencia
-          this.map.fitBounds(bbox, { padding: [50, 50] });
+  private async cargarGeometrias() {
+    this.totalActivos = 0;
+    let bbox = L.latLngBounds([]);
+
+    // Procesamos todas las capas en paralelo para máxima velocidad
+    const promesas = this.capasFisicas.map(async (capa) => {
+      try {
+        const url = `${this.baseUrl}/${capa.archivo}`;
+        const response = await fetch(url);
+        if (!response.ok) return;
+
+        // Deserialización binaria usando stream
+        const iterador = fgb.geojson.deserialize(response.body!);
+        const features: any[] = [];
+        for await (const feature of iterador) {
+          features.push(feature);
         }
-        this.renderizarGrafico();
-        setTimeout(() => this.cargando.set(false), 300);
+
+        if (features.length > 0) {
+          capa.cantidad = features.length;
+          this.totalActivos += capa.cantidad;
+          capa.instance = L.geoJSON(features as any, {
+            style: { color: capa.color, weight: 3, opacity: 0.9 },
+            pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 3, color: capa.color, fillColor: capa.color, fillOpacity: 0.8 })
+          });
+
+          if (capa.visible) {
+            capa.instance.addTo(this.map);
+            bbox.extend(capa.instance.getBounds());
+          }
+        }
+      } catch (e) {
+        console.error(`Error cargando binario ${capa.nombre}:`, e);
       }
     });
+
+    await Promise.all(promesas);
+
+    if (bbox.isValid()) {
+      this.initialBounds = bbox;
+      this.map.fitBounds(bbox, { padding: [50, 50] });
+    }
+    this.renderizarGrafico();
+    setTimeout(() => this.cargando.set(false), 300);
   }
+
+  resetZoom() { if (this.initialBounds) this.map.fitBounds(this.initialBounds, { padding: [50, 50] }); }
+  cambiarBase(nombre: string) {
+    this.map.removeLayer(this.tileLayers[this.mapaBaseActual]);
+    this.tileLayers[nombre].addTo(this.map);
+    this.mapaBaseActual = nombre;
+  }
+
+  toggleTema() {
+    this.isDark.set(!this.isDark());
+    this.cambiarBase(this.isDark() ? 'Oscuro' : 'Calles');
+  }
+
+  toggleCapa(capa: any) {
+    capa.visible = !capa.visible;
+    if (capa.visible && capa.instance) this.map.addLayer(capa.instance);
+    else if (!capa.visible && capa.instance) this.map.removeLayer(capa.instance);
+  }
+
+  toggleTodas(estado: boolean) { this.capasFisicas.forEach(capa => { if (capa.cantidad > 0 && capa.visible !== estado) this.toggleCapa(capa); }); }
+  toggleGrafica() { this.graficaExpandida.set(!this.graficaExpandida()); setTimeout(() => this.chartInstance?.resize(), 50); }
 
   private renderizarGrafico() {
     const datosValidos = this.capasFisicas.filter(c => c.cantidad > 0).sort((a, b) => b.cantidad - a.cantidad);
@@ -264,10 +292,7 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
       data: {
         datasets: [{
           tree: datosValidos as any, key: 'cantidad', groups: ['nombre'], spacing: 2, borderWidth: 1, borderRadius: 6, borderColor: 'rgba(0,0,0,0.3)',
-          backgroundColor: (ctx: any) => {
-            const capa = this.capasFisicas.find(c => c.nombre === ctx.raw?.g);
-            return capa ? capa.color : '#666';
-          },
+          backgroundColor: (ctx: any) => this.capasFisicas.find(c => c.nombre === ctx.raw?.g)?.color || '#666',
           labels: {
             display: true, color: '#000000', font: [{ size: 13, weight: '900' }, { size: 11, weight: 'normal' }],
             formatter: (ctx: any) => [ctx.raw?.g, `${ctx.raw?.v} pts`]
@@ -277,32 +302,4 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
   }
-
-  resetZoom() {
-  if (this.initialBounds) {
-    this.map.fitBounds(this.initialBounds, { padding: [50, 50] });
-  }
-}
-
-  cambiarBase(nombre: string) {
-    this.map.removeLayer(this.tileLayers[this.mapaBaseActual]);
-    this.tileLayers[nombre].addTo(this.map);
-    this.mapaBaseActual = nombre;
-  }
-
-  toggleTema() {
-    this.isDark.set(!this.isDark());
-    // Regla de cambio automático del mapa base
-    const nuevoMapa = this.isDark() ? 'Oscuro' : 'Calles';
-    this.cambiarBase(nuevoMapa);
-  }
-
-  toggleCapa(capa: any) {
-    capa.visible = !capa.visible;
-    if (capa.visible && capa.instance) this.map.addLayer(capa.instance);
-    else if (!capa.visible && capa.instance) this.map.removeLayer(capa.instance);
-  }
-
-  toggleTodas(estado: boolean) { this.capasFisicas.forEach(capa => { if (capa.cantidad > 0 && capa.visible !== estado) this.toggleCapa(capa); }); }
-  toggleGrafica() { this.graficaExpandida.set(!this.graficaExpandida()); setTimeout(() => this.chartInstance?.resize(), 50); }
 }
