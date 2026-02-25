@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { MapViewerComponent } from './map-viewer.component';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MapViewerComponent],
-  template: `<app-map-viewer></app-map-viewer>` // Carga directa del mapa
+  imports: [RouterOutlet],
+  template: `<router-outlet></router-outlet>`
 })
 export class AppComponent {}
