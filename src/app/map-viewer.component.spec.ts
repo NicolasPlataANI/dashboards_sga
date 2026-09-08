@@ -15,12 +15,9 @@ describe('MapViewerComponent', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(async () => {
-    // Mockeamos el fetch global para prevenir peticiones HTTP reales a los archivos binarios .fgb
+    // Mockeamos el fetch global para prevenir peticiones HTTP reales y evitar que flatgeobuf falle
     globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      body: {
-        getReader: () => ({ read: () => Promise.resolve({ done: true }) })
-      }
+      ok: false
     } as any);
 
     // Mockeamos los parámetros de la URL para inicializar el proyecto
@@ -44,6 +41,9 @@ describe('MapViewerComponent', () => {
   });
 
   afterEach(() => {
+    if ((component as any).map) {
+      (component as any).map.remove(); // Limpiar la instancia de Leaflet para la siguiente prueba
+    }
     httpMock.verify();
     vi.restoreAllMocks();
   });

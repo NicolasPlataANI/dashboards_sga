@@ -14,7 +14,7 @@ Chart.register(TreemapController, TreemapElement);
 @Component({
   selector: 'app-map-viewer',
   standalone: true,
-  imports: [HttpClientModule, CommonModule, DecimalPipe],
+  imports: [CommonModule, DecimalPipe],
   template: `
     <div [style.backgroundColor]="isDark() ? '#121212' : '#FFF9C4'" 
          [style.color]="isDark() ? '#e2e8f0' : '#1e293b'"
