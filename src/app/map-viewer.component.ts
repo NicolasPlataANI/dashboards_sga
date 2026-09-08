@@ -2,13 +2,13 @@ import { Component, OnInit, AfterViewInit, signal } from '@angular/core';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { catchError, of } from 'rxjs';
-import * as L from 'leaflet';
 import Chart from 'chart.js/auto';
 import { Title } from '@angular/platform-browser';
 import { TreemapController, TreemapElement } from 'chartjs-chart-treemap';
 import * as fgb from 'flatgeobuf';
 
 Chart.register(TreemapController, TreemapElement);
+declare const L: any;
 
 @Component({
   selector: 'app-map-viewer',
@@ -153,14 +153,14 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
   isDark = signal(true); 
   info = signal<any>(null);
   
-  private map!: L.Map;
+  private map!: any;
   private chartInstance!: Chart;
-  private initialBounds: L.LatLngBounds | null = null;
+  private initialBounds: any = null;
   
   totalActivos = 0;
   baseUrl = '';
   
-  private tileLayers: { [key: string]: L.TileLayer } = {
+  private tileLayers: { [key: string]: any } = {
     'Oscuro': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 16, maxZoom: 22 }),
     'Satélite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 19, maxZoom: 22 }),
     'Calles': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxNativeZoom: 19, maxZoom: 22 })
@@ -252,14 +252,14 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
             });
 
             const geoJsonData = L.geoJSON(features as any, {
-              pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 4, color: '#fff', weight: 1, fillColor: capa.color, fillOpacity: 0.9 })
+              pointToLayer: (f: any, latlng: any) => L.circleMarker(latlng, { radius: 4, color: '#fff', weight: 1, fillColor: capa.color, fillOpacity: 0.9 })
             });
             
             (capa.instance as any).addLayer(geoJsonData);
           } else {
             capa.instance = L.geoJSON(features as any, {
               style: { color: capa.color, weight: 3, opacity: 0.9 },
-              pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 3, color: capa.color, fillColor: capa.color, fillOpacity: 0.8 })
+              pointToLayer: (f: any, latlng: any) => L.circleMarker(latlng, { radius: 3, color: capa.color, fillColor: capa.color, fillOpacity: 0.8 })
             });
           }
 
