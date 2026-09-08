@@ -3,6 +3,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { catchError, of } from 'rxjs';
 import * as L from 'leaflet';
+import 'leaflet.markercluster';
 import Chart from 'chart.js/auto';
 import { Title } from '@angular/platform-browser';
 import { TreemapController, TreemapElement } from 'chartjs-chart-treemap';
@@ -161,29 +162,29 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
   baseUrl = '';
   
   private tileLayers: { [key: string]: L.TileLayer } = {
-    'Oscuro': L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxNativeZoom: 19, maxZoom: 22 }),
+    'Oscuro': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 16, maxZoom: 22 }),
     'Satélite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 19, maxZoom: 22 }),
     'Calles': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxNativeZoom: 19, maxZoom: 22 })
   };
   mapaBaseActual = 'Oscuro';
 
   capasFisicas = [
-    { nombre: 'Calzadas', archivo: 'calzada.fgb', color: '#FF5733', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Puentes', archivo: 'puente.fgb', color: '#DC143C', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Túneles', archivo: 'tunel.fgb', color: '#FF69B4', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Estaciones de Peaje', archivo: 'estacion_peaje.fgb', color: '#FFFF00', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Estaciones de Pesaje', archivo: 'estacion_pesaje.fgb', color: '#FF4500', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Ciclorruta', archivo: 'ciclorruta.fgb', color: '#00FF00', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Muros', archivo: 'muro.fgb', color: '#8A2BE2', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'CCO', archivo: 'cco.fgb', color: '#FF00FF', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Bermas', archivo: 'berma.fgb', color: '#FFD700', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Cunetas', archivo: 'cuneta.fgb', color: '#00FFFF', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Defensa Vial', archivo: 'defensa_vial.fgb', color: '#FF1493', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Dispositivos ITS', archivo: 'dispositivo_its.fgb', color: '#9400D3', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Luminarias', archivo: 'luminarias.fgb', color: '#7FFF00', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Señales Verticales', archivo: 'senal_vertical.fgb', color: '#1E90FF', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Separador', archivo: 'separador.fgb', color: '#32CD32', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 },
-    { nombre: 'Zonas de servicio', archivo: 'zona_servicio.fgb', color: '#FFA500', visible: true, instance: null as L.GeoJSON | null, cantidad: 0 }
+    { nombre: 'Calzadas', archivo: 'calzada.fgb', color: '#FF5733', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Puentes', archivo: 'puente.fgb', color: '#DC143C', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Túneles', archivo: 'tunel.fgb', color: '#FF69B4', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Estaciones de Peaje', archivo: 'estacion_peaje.fgb', color: '#FFFF00', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Estaciones de Pesaje', archivo: 'estacion_pesaje.fgb', color: '#FF4500', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Ciclorruta', archivo: 'ciclorruta.fgb', color: '#00FF00', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Muros', archivo: 'muro.fgb', color: '#8A2BE2', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'CCO', archivo: 'cco.fgb', color: '#FF00FF', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Bermas', archivo: 'berma.fgb', color: '#FFD700', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Cunetas', archivo: 'cuneta.fgb', color: '#00FFFF', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Defensa Vial', archivo: 'defensa_vial.fgb', color: '#FF1493', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Dispositivos ITS', archivo: 'dispositivo_its.fgb', color: '#9400D3', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Luminarias', archivo: 'luminarias.fgb', color: '#7FFF00', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Señales Verticales', archivo: 'senal_vertical.fgb', color: '#1E90FF', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Separador', archivo: 'separador.fgb', color: '#32CD32', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Zonas de servicio', archivo: 'zona_servicio.fgb', color: '#FFA500', visible: true, instance: null as any, cantidad: 0 }
   ];
 
   constructor(private http: HttpClient, private titleService: Title) {}
@@ -209,7 +210,7 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() { this.initMap(); }
 
   private initMap() {
-    this.map = L.map('map', { zoomControl: false, maxZoom: 22 }).setView([4.6, -74.3], 7);
+    this.map = L.map('map', { zoomControl: false, attributionControl: false, maxZoom: 22 }).setView([4.6, -74.3], 7);
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
     this.tileLayers[this.mapaBaseActual].addTo(this.map);
     this.cargarGeometrias();
@@ -236,14 +237,36 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
         if (features.length > 0) {
           capa.cantidad = features.length;
           this.totalActivos += capa.cantidad;
-          capa.instance = L.geoJSON(features as any, {
-            style: { color: capa.color, weight: 3, opacity: 0.9 },
-            pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 3, color: capa.color, fillColor: capa.color, fillOpacity: 0.8 })
-          });
+          
+          const esCapaDePuntos = features.every((f: any) => f.geometry.type === 'Point' || f.geometry.type === 'MultiPoint');
+
+          if (esCapaDePuntos && features.length > 50) {
+            capa.instance = (L as any).markerClusterGroup({
+              chunkedLoading: true,
+              iconCreateFunction: (cluster: any) => {
+                return L.divIcon({ 
+                  html: `<div style="background-color:${capa.color}; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; color: white; text-shadow: 1px 1px 2px black; font-weight: bold; border: 2px solid rgba(255,255,255,0.8);">${cluster.getChildCount()}</div>`, 
+                  className: 'custom-cluster-icon',
+                  iconSize: L.point(35, 35)
+                });
+              }
+            });
+
+            const geoJsonData = L.geoJSON(features as any, {
+              pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 4, color: '#fff', weight: 1, fillColor: capa.color, fillOpacity: 0.9 })
+            });
+            
+            (capa.instance as any).addLayer(geoJsonData);
+          } else {
+            capa.instance = L.geoJSON(features as any, {
+              style: { color: capa.color, weight: 3, opacity: 0.9 },
+              pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 3, color: capa.color, fillColor: capa.color, fillOpacity: 0.8 })
+            });
+          }
 
           if (capa.visible) {
-            capa.instance.addTo(this.map);
-            bbox.extend(capa.instance.getBounds());
+            this.map.addLayer(capa.instance as any);
+            bbox.extend((capa.instance as any).getBounds());
           }
         }
       } catch (e) {

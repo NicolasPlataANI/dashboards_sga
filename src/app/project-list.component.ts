@@ -1,12 +1,14 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { catchError, of } from 'rxjs';
+import { TranslationService } from './translation.service';
+import { TranslatePipe } from './translate.pipe';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div [style.backgroundColor]="isDark() ? '#1a0f00' : '#FFE0B2'" 
          [style.color]="isDark() ? '#fde6d2' : '#1e293b'"
@@ -20,20 +22,49 @@ import { catchError, of } from 'rxjs';
             <img src="logoani.png" alt="ANI" class="h-16 object-contain">
             <div>
               <h1 [style.color]="isDark() ? '#d35400' : '#EF6C00'" class="text-3xl font-black uppercase tracking-tight">
-                Agencia Nacional de Infraestructura
+                {{ 'projects.title' | translate }}
               </h1>
               <p [style.color]="isDark() ? '#E65100' : '#F57C00'" class="text-[10px] font-mono uppercase tracking-widest mt-1">
-                Gestión de activos
+                {{ 'projects.subtitle' | translate }}
               </p>
             </div>
           </div>
 
-          <button (click)="toggleTema()" 
-                  [style.backgroundColor]="isDark() ? '#d35400' : '#EF6C00'"
-                  class="px-4 py-2 rounded-xl text-xl border-none shadow-lg cursor-pointer transition-transform active:scale-90 text-white">
-            {{ isDark() ? '🌞' : '🌚' }}
-          </button>
+          <div class="flex gap-2">
+            <button (click)="toggleLanguage()" 
+                    [style.backgroundColor]="isDark() ? '#d35400' : '#EF6C00'"
+                    class="px-4 py-2 rounded-xl font-bold border-none shadow-lg cursor-pointer transition-transform active:scale-90 text-white uppercase text-sm">
+              {{ t.lang() }}
+            </button>
+            <button (click)="toggleTema()" 
+                    [style.backgroundColor]="isDark() ? '#d35400' : '#EF6C00'"
+                    class="px-4 py-2 rounded-xl text-xl border-none shadow-lg cursor-pointer transition-transform active:scale-90 text-white">
+              {{ isDark() ? '🌞' : '🌚' }}
+            </button>
+          </div>
         </header>
+
+        @if (errorCarga()) {
+          <div class="bg-red-500/10 border border-red-500 text-red-600 p-6 rounded-xl mb-8 flex flex-col items-center justify-center text-center">
+            <span class="text-3xl mb-2">⚠️</span>
+            <h2 class="text-lg font-bold">{{ 'projects.error_title' | translate }}</h2>
+            <p class="text-sm opacity-80 mt-1">{{ 'projects.error_desc' | translate }}</p>
+          </div>
+        } @else {
+          <div class="mb-10">
+            <input type="text" 
+                   [placeholder]="'projects.search_placeholder' | translate" 
+                   (input)="actualizarBusqueda($event)"
+                   [style.backgroundColor]="isDark() ? '#2d1b0e' : '#FFF3E0'"
+                   [style.borderColor]="isDark() ? '#d35400' : '#EF6C00'"
+                   [style.color]="isDark() ? '#fff' : '#000'"
+                   class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-orange-500 shadow-sm transition-colors">
+          </div>
+
+          @if (proyectosAgrupados().length === 0 && proyectos().length > 0) {
+            <p class="text-center italic opacity-60 mt-10">{{ 'projects.no_results' | translate }} "{{ terminoBusqueda() }}"</p>
+          }
+        }
 
         @for (grupo of proyectosAgrupados(); track grupo.mes) {
           <div class="mb-12">
@@ -54,7 +85,7 @@ import { catchError, of } from 'rxjs';
                   <a [href]="'visor?proyecto=' + p.nombre" 
                      [style.backgroundColor]="isDark() ? '#d35400' : '#EF6C00'"
                      class="text-white px-6 py-2 rounded-lg font-black text-xs uppercase hover:brightness-110 active:scale-95 transition-all flex-shrink-0 shadow-md">
-                    Acceder
+                    {{ 'projects.access' | translate }}
                   </a>
                 </div>
               }
@@ -66,19 +97,43 @@ import { catchError, of } from 'rxjs';
   `
 })
 export class ProjectListComponent implements OnInit {
-  proyectosAgrupados = signal<{ mes: string, proyectos: any[] }[]>([]);
+  t = inject(TranslationService);
+  proyectos = signal<any[]>([]);
+  terminoBusqueda = signal('');
+  errorCarga = signal(false);
+  
+  proyectosAgrupados = computed(() => {
+    const filtrados = this.proyectos().filter(p => p.nombre.toLowerCase().includes(this.terminoBusqueda().toLowerCase()));
+    return this.agruparPorMes(filtrados);
+  });
+
   isDark = signal(true);
 
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
     const url = 'https://raw.githubusercontent.com/NicolasPlataANI/ani-datos-gis/main/proyectos.json';
-    this.http.get<any[]>(url).pipe(catchError(() => of([]))).subscribe(data => {
-      this.proyectosAgrupados.set(this.agruparPorMes(data));
+    this.http.get<any[]>(url).pipe(
+      catchError(() => {
+        this.errorCarga.set(true);
+        return of([]);
+      })
+    ).subscribe(data => {
+      this.proyectos.set(data);
     });
   }
 
   toggleTema() { this.isDark.set(!this.isDark()); }
+
+  toggleLanguage() {
+    const nextLang = this.t.lang() === 'es' ? 'en' : 'es';
+    this.t.setLanguage(nextLang);
+  }
+
+  actualizarBusqueda(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.terminoBusqueda.set(input.value);
+  }
 
   private agruparPorMes(data: any[]): any[] {
     const grupos = data.reduce((acc, p) => {
