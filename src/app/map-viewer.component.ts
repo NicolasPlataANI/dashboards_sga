@@ -252,7 +252,7 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
               chunkedLoading: true,
               iconCreateFunction: (cluster: any) => {
                 return L.divIcon({ 
-                  html: `<div style="background-color:${capa.color}; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; color: white; text-shadow: 1px 1px 2px black; font-weight: bold; border: 2px solid rgba(255,255,255,0.8);">${cluster.getChildCount()}</div>`, 
+                  html: `<div style="background-color:${capa.color}; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; color: white; text-shadow: 1px 1px 2px black; font-weight: bold; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 4px 6px rgba(0,0,0,0.3); font-size: 11px;">${cluster.getChildCount()}</div>`, 
                   className: 'custom-cluster-icon',
                   iconSize: L.point(35, 35)
                 });
@@ -260,14 +260,26 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
             });
 
             const geoJsonData = L.geoJSON(features as any, {
-              pointToLayer: (f: any, latlng: any) => L.circleMarker(latlng, { radius: 8, color: '#fff', weight: 2, fillColor: capa.color, fillOpacity: 1 })
+              pointToLayer: (f: any, latlng: any) => L.marker(latlng, {
+                icon: L.divIcon({
+                  html: `<div style="background-color:${capa.color}; border-radius: 50%; width: 22px; height: 22px; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 4px rgba(0,0,0,0.4);"></div>`,
+                  className: 'custom-single-icon',
+                  iconSize: L.point(22, 22)
+                })
+              })
             });
             
             (capa.instance as any).addLayer(geoJsonData);
           } else {
             capa.instance = L.geoJSON(features as any, {
               style: { color: capa.color, weight: 3, opacity: 0.9 },
-              pointToLayer: (f: any, latlng: any) => L.circleMarker(latlng, { radius: 6, color: '#fff', weight: 1.5, fillColor: capa.color, fillOpacity: 1 })
+              pointToLayer: (f: any, latlng: any) => L.marker(latlng, {
+                icon: L.divIcon({
+                  html: `<div style="background-color:${capa.color}; border-radius: 50%; width: 22px; height: 22px; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 4px rgba(0,0,0,0.4);"></div>`,
+                  className: 'custom-single-icon',
+                  iconSize: L.point(22, 22)
+                })
+              })
             });
           }
 
