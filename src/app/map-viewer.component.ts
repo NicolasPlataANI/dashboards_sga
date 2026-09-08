@@ -3,7 +3,6 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { catchError, of } from 'rxjs';
 import * as L from 'leaflet';
-import 'leaflet.markercluster';
 import Chart from 'chart.js/auto';
 import { Title } from '@angular/platform-browser';
 import { TreemapController, TreemapElement } from 'chartjs-chart-treemap';
