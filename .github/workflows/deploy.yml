@@ -28,6 +28,6 @@ jobs:
         run: npm run test -- --watch=false
 
       - name: Build and Deploy
-        run: npx ng deploy --base-href=/dashboards_sga/
+        run: npx ng deploy --base-href=/dashboards_general/ --dir=dist/dashboards_general/browser
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
