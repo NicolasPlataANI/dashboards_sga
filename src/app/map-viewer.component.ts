@@ -1,13 +1,10 @@
-import { Component, OnInit, AfterViewInit, signal } from '@angular/core';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { Component, OnInit, AfterViewInit, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { catchError, of } from 'rxjs';
-import Chart from 'chart.js/auto';
-import { Title } from '@angular/platform-browser';
-import { TreemapController, TreemapElement } from 'chartjs-chart-treemap';
 import * as fgb from 'flatgeobuf';
+import { Title } from '@angular/platform-browser';
 
-Chart.register(TreemapController, TreemapElement);
 declare const L: any;
 
 @Component({
@@ -22,123 +19,143 @@ declare const L: any;
       @if (cargando()) {
         <div [style.backgroundColor]="isDark() ? '#121212' : '#FFF9C4'" class="absolute inset-0 z-[100] flex flex-col items-center justify-center">
           <div class="w-16 h-16 border-4 border-zinc-500 border-t-yellow-500 rounded-full animate-spin"></div>
-          <p class="text-[10px] text-zinc-500 font-mono uppercase mt-4 tracking-widest animate-pulse">Decodificando binario...</p>
+          <p class="mt-4 font-bold tracking-widest uppercase opacity-70">Cargando...</p>
         </div>
       }
 
-      <div class="flex-1 flex min-h-0">
-        <aside [style.backgroundColor]="isDark() ? '#1F1F1F' : '#FFFDE7'" 
-               [style.borderColor]="isDark() ? '#333' : '#FBC02D'"
-               class="w-80 border-r flex flex-col shadow-2xl z-20 flex-shrink-0 transition-colors duration-300">
-          <header [style.borderColor]="isDark() ? '#333' : '#FBC02D'" class="p-6 border-b">
-            <div class="flex justify-between items-start mb-4">
-              <img src="logoani.png" alt="Logo ANI" class="h-15 object-contain">
-              <button (click)="toggleTema()" 
-                      [style.backgroundColor]="isDark() ? '#333' : '#F9A825'"
-                      class="px-3 py-1.5 rounded-lg text-lg border-none shadow-sm cursor-pointer transition-transform active:scale-90">
+      <div class="flex-1 flex w-full h-full relative">
+        <div id="map" class="w-full h-full bg-slate-900 z-0"></div>
+        
+        <div class="absolute top-6 left-6 z-10 w-96 flex flex-col gap-4 pointer-events-none">
+          <div [style.backgroundColor]="isDark() ? 'rgba(18,18,18,0.85)' : 'rgba(255,249,196,0.9)'" 
+               class="backdrop-blur-md p-8 rounded-2xl border border-zinc-500/20 shadow-2xl pointer-events-auto transition-colors duration-300">
+            <div class="flex justify-between items-start mb-6">
+              <div class="flex items-center gap-4">
+                <img src="logoani.png" alt="ANI" class="h-12 object-contain">
+              </div>
+              <button (click)="toggleTema()" class="text-2xl hover:scale-110 transition-transform bg-white/5 p-2 rounded-xl">
                 {{ isDark() ? '🌞' : '🌚' }}
               </button>
             </div>
-            <p [style.color]="isDark() ? '#FFCD00' : '#F9A825'" class="text-[10px] uppercase tracking-widest font-bold mb-1 mt-2">Proyecto ANI</p>
-            <h1 [class]="isDark() ? 'text-white' : 'text-slate-900'" class="text-xl font-black leading-tight uppercase">
-              {{ info()?.nombre || '---' }}
-            </h1>
-          </header>
+            
+            <p class="text-[10px] font-black tracking-[0.2em] uppercase text-yellow-500 mb-1">Proyecto ANI</p>
+            <h1 class="text-2xl font-black uppercase leading-tight mb-8">{{ info()?.nombre || '---' }}</h1>
 
-          <section class="flex-1 p-6 overflow-y-auto custom-scrollbar">
-            <div class="flex flex-col gap-6">
+            <div class="grid grid-cols-2 gap-y-6 gap-x-4">
               <div>
-                <p [style.color]="isDark() ? '#888' : '#F9A825'" class="text-[10px] uppercase font-bold mb-1">Modo</p>
-                <p class="text-lg font-bold">{{ info()?.modo || '---' }}</p>
+                <p class="text-[9px] uppercase tracking-widest opacity-50 mb-1 font-bold">Modo</p>
+                <p class="font-medium text-sm">{{ info()?.modo || '---' }}</p>
               </div>
               <div>
-                <p [style.color]="isDark() ? '#888' : '#F9A825'" class="text-[10px] uppercase font-bold mb-1">Etapa</p>
-                <p class="text-lg font-bold">{{ info()?.etapa || '---' }}</p>
+                <p class="text-[9px] uppercase tracking-widest opacity-50 mb-1 font-bold">Etapa</p>
+                <p class="font-medium text-sm">{{ info()?.etapa || '---' }}</p>
               </div>
               <div>
-                <p [style.color]="isDark() ? '#888' : '#F9A825'" class="text-[10px] uppercase font-bold mb-1">Longitud</p>
-                <p class="text-lg font-bold font-mono">{{ info()?.longitud || 0 }} km</p>
+                <p class="text-[9px] uppercase tracking-widest opacity-50 mb-1 font-bold">Longitud</p>
+                <p class="font-bold text-lg font-mono">{{ info()?.longitud || 0 }} <span class="text-xs font-sans opacity-50">km</span></p>
               </div>
               <div>
-                <p [style.color]="isDark() ? '#888' : '#F9A825'" class="text-[10px] uppercase font-bold mb-1">Mes de Avance</p>
-                <p class="text-lg font-bold capitalize">{{ info()?.mesAvance || '---' }}</p>
+                <p class="text-[9px] uppercase tracking-widest opacity-50 mb-1 font-bold">Mes</p>
+                <p class="font-medium text-sm capitalize">{{ info()?.mesAvance || '---' }}</p>
               </div>
             </div>
-          </section>
-        </aside>
-
-        <main class="flex-1 relative z-0">
-          <div id="map" class="h-full w-full"></div>
-        </main>
-
-        <aside [style.backgroundColor]="isDark() ? '#1F1F1F' : '#FFFDE7'" 
-               [style.borderColor]="isDark() ? '#333' : '#FBC02D'"
-               class="w-72 border-l flex flex-col shadow-2xl z-10 flex-shrink-0 transition-colors duration-300">
-          
-          <div [style.borderColor]="isDark() ? '#333' : '#FBC02D'" class="p-4 border-b">
-            <button (click)="resetZoom()" 
-                    [style.backgroundColor]="isDark() ? '#333' : '#F9A825'"
-                    class="w-full py-2 text-[10px] font-black uppercase rounded border border-zinc-500/30 text-white cursor-pointer hover:brightness-110 active:scale-95 transition-all">
-              📍 Recentrar Mapa
-            </button>
           </div>
+        </div>
 
-          <div [style.borderColor]="isDark() ? '#333' : '#FBC02D'" class="p-4 border-b transition-colors duration-300">
-            <p class="text-[9px] uppercase font-bold text-zinc-500 mb-2">Mapa Base</p>
-            <div class="flex gap-1">
-              @for (base of ['Oscuro', 'Satélite', 'Calles']; track base) {
-                <button (click)="cambiarBase(base)" 
-                        [class.bg-yellow-500]="mapaBaseActual === base"
-                        [class.text-black]="mapaBaseActual === base"
-                        [style.backgroundColor]="mapaBaseActual !== base ? (isDark() ? '#333' : '#F9A825') : ''"
-                        class="flex-1 py-1.5 text-[9px] font-bold uppercase rounded border-none transition-colors cursor-pointer text-white">
-                  {{ base }}
+        <div class="absolute top-6 right-6 z-10 w-72 flex flex-col gap-4 pointer-events-none">
+          <button (click)="recentrar()" 
+                  [style.backgroundColor]="isDark() ? 'rgba(39,39,42,0.9)' : 'rgba(255,255,255,0.9)'"
+                  class="w-full py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-yellow-500 transition-all shadow-xl border border-zinc-500/20 backdrop-blur-md pointer-events-auto"
+                  [style.color]="isDark() ? '#e2e8f0' : '#1e293b'">
+            📍 Recentrar Mapa
+          </button>
+
+          <div [style.backgroundColor]="isDark() ? 'rgba(18,18,18,0.85)' : 'rgba(255,249,196,0.9)'" 
+               class="backdrop-blur-md p-6 rounded-2xl border border-zinc-500/20 shadow-2xl pointer-events-auto transition-colors duration-300">
+            <p class="text-[10px] font-black tracking-[0.2em] uppercase opacity-50 mb-4">Mapa Base</p>
+            <div class="flex gap-2 bg-zinc-500/10 p-1 rounded-xl">
+              @for (mapa of ['Oscuro', 'Satélite', 'Calles']; track mapa) {
+                <button (click)="cambiarBase(mapa)" 
+                        [class.bg-yellow-500]="mapaBaseActual === mapa"
+                        [class.text-black]="mapaBaseActual === mapa"
+                        class="flex-1 py-2 rounded-lg text-xs font-bold transition-all">
+                  {{ mapa }}
                 </button>
               }
             </div>
           </div>
 
-          <div [style.borderColor]="isDark() ? '#333' : '#FBC02D'" 
-               [style.backgroundColor]="isDark() ? 'rgba(31,31,31,0.5)' : 'rgba(255,253,231,0.5)'"
-               class="p-4 border-b flex justify-between items-center transition-colors duration-300">
-            <span class="text-[10px] uppercase font-bold text-zinc-500">Inventario GIS ({{ totalActivos | number }})</span>
-            <div class="flex gap-1">
-              <button (click)="toggleTodas(true)" [style.backgroundColor]="isDark() ? '#444' : '#FBC02D'" class="text-[8px] uppercase font-bold px-2 py-1 rounded text-white border-none cursor-pointer transition-colors">Todo</button>
-              <button (click)="toggleTodas(false)" [style.backgroundColor]="isDark() ? '#444' : '#FBC02D'" class="text-[8px] uppercase font-bold px-2 py-1 rounded text-white border-none cursor-pointer transition-colors">Nada</button>
+          <div [style.backgroundColor]="isDark() ? 'rgba(18,18,18,0.85)' : 'rgba(255,249,196,0.9)'" 
+               class="backdrop-blur-md flex-1 overflow-hidden flex flex-col rounded-2xl border border-zinc-500/20 shadow-2xl pointer-events-auto transition-colors duration-300 max-h-[400px]">
+            
+            <div class="p-6 border-b border-zinc-500/20 flex justify-between items-center bg-zinc-500/5">
+              <p class="text-[10px] font-black tracking-[0.2em] uppercase opacity-80">Inventario ({{ totalActivos | number }})</p>
+              <div class="flex gap-2">
+                <button (click)="toggleTodas(true)" class="text-[9px] font-bold uppercase hover:text-yellow-500 bg-white/5 px-2 py-1 rounded">Todo</button>
+                <button (click)="toggleTodas(false)" class="text-[9px] font-bold uppercase hover:text-yellow-500 bg-white/5 px-2 py-1 rounded">Nada</button>
+              </div>
+            </div>
+
+            <div class="overflow-y-auto p-4 flex-1 custom-scrollbar">
+              <div class="flex flex-col gap-1">
+                @for (capa of capasFisicas; track capa.nombre) {
+                  <label class="flex items-center justify-between p-3 hover:bg-white/5 rounded-xl cursor-pointer transition-colors group">
+                    <div class="flex items-center gap-3">
+                      <div class="w-3 h-3 rounded-full shadow-sm" [style.backgroundColor]="capa.color"></div>
+                      <div>
+                        <span class="text-sm font-bold block truncate max-w-[120px]" [title]="capa.nombre">{{ capa.nombre }}</span>
+                        <span class="text-[10px] opacity-50 font-mono">{{ capa.cantidad | number }} pts</span>
+                      </div>
+                    </div>
+                    <div class="relative flex items-center">
+                      <input type="checkbox" 
+                             [checked]="capa.visible" 
+                             (change)="toggleCapa(capa)" 
+                             class="peer appearance-none w-5 h-5 rounded border-2 border-zinc-500/30 checked:bg-yellow-500 checked:border-yellow-500 transition-colors cursor-pointer" [disabled]="capa.cantidad === 0">
+                    </div>
+                  </label>
+                }
+              </div>
             </div>
           </div>
-
-          <div class="flex-1 p-2 overflow-y-auto custom-scrollbar">
-            @for (capa of capasFisicas; track capa.nombre) {
-              <label [class]="isDark() ? 'hover:bg-white/5' : 'hover:bg-black/5'" class="flex items-center justify-between group cursor-pointer p-2 rounded transition-colors">
-                <div class="flex items-center gap-3">
-                  <div class="w-3 h-3 rounded-full border border-zinc-500" [style.backgroundColor]="capa.color"></div>
-                  <div class="flex flex-col">
-                    <span [class]="isDark() ? 'text-zinc-300 group-hover:text-white' : 'text-slate-700 group-hover:text-black'" class="text-xs font-bold leading-none transition-colors">{{ capa.nombre }}</span>
-                    <span class="text-[10px] text-zinc-500 font-mono mt-1">{{ capa.cantidad | number }} pts</span>
-                  </div>
-                </div>
-                <input type="checkbox" [checked]="capa.visible" (change)="toggleCapa(capa)" [disabled]="capa.cantidad === 0" class="w-4 h-4 accent-yellow-500 cursor-pointer">
-              </label>
-            }
-          </div>
-        </aside>
+        </div>
       </div>
 
-      <section 
-        [class.absolute]="graficaExpandida()" [class.inset-0]="graficaExpandida()" [class.z-[60]]="graficaExpandida()"
-        [class.relative]="!graficaExpandida()" [class.h-48]="!graficaExpandida()"
-        [style.backgroundColor]="isDark() ? '#1F1F1F' : '#FFFDE7'"
-        [style.borderColor]="isDark() ? '#333' : '#FBC02D'"
-        class="border-t flex-shrink-0 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.3)] transition-all duration-300">
+      <div class="w-full transition-all duration-500 ease-in-out relative flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.3)] z-20"
+           [style.backgroundColor]="isDark() ? '#18181b' : '#fef08a'"
+           [style.height]="graficaExpandida() ? '45vh' : '45px'">
         
-        <button (click)="toggleGrafica()" [style.backgroundColor]="isDark() ? '#333' : '#F9A825'" class="absolute top-2 right-2 z-10 px-3 py-1.5 rounded text-[10px] uppercase font-bold text-white border-none shadow-lg cursor-pointer">
-          {{ graficaExpandida() ? 'Reducir' : 'Expandir' }}
+        <button (click)="graficaExpandida.set(!graficaExpandida())" 
+                class="absolute right-6 -top-10 text-xs font-bold uppercase px-6 py-3 rounded-t-2xl shadow-xl hover:brightness-110 transition-all flex items-center gap-2"
+                [style.backgroundColor]="isDark() ? '#18181b' : '#fef08a'"
+                [style.color]="isDark() ? '#e2e8f0' : '#1e293b'">
+          {{ graficaExpandida() ? 'Ocultar Resumen' : 'Ver Resumen KPI' }}
         </button>
-        <div class="h-full w-full pt-10 pb-2 px-2">
-          <canvas id="chartActivos"></canvas>
+
+        <div class="flex-1 p-6 overflow-y-auto custom-scrollbar transition-opacity duration-300" [class.opacity-0]="!graficaExpandida()" [class.opacity-100]="graficaExpandida()">
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            @for (capa of capasFisicasOrdenadas(); track capa.nombre) {
+              <div class="rounded-2xl p-5 border shadow-sm relative overflow-hidden group hover:-translate-y-1 transition-all duration-300"
+                   [style.backgroundColor]="isDark() ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'"
+                   [style.borderColor]="isDark() ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'">
+                
+                <div class="absolute top-0 left-0 w-full h-1" [style.backgroundColor]="capa.color"></div>
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full opacity-10 group-hover:scale-150 transition-transform duration-500" [style.backgroundColor]="capa.color"></div>
+                
+                <div class="relative z-10 flex flex-col h-full justify-between gap-4">
+                  <h3 class="text-[11px] font-bold uppercase tracking-widest leading-tight opacity-70">{{ capa.nombre }}</h3>
+                  <div>
+                    <p class="text-3xl font-black tabular-nums tracking-tight" [style.color]="isDark() ? capa.color : '#1e293b'">
+                      {{ capa.cantidad | number }}
+                    </p>
+                    <p class="text-[9px] uppercase font-bold opacity-50 mt-1">Elementos</p>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
         </div>
-      </section>
+      </div>
     </div>
   `,
   styles: [`
@@ -154,11 +171,14 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
   info = signal<any>(null);
   
   private map!: any;
-  private chartInstance!: Chart;
+  baseUrl = '';
   private initialBounds: any = null;
   
   totalActivos = 0;
-  baseUrl = '';
+  
+  capasFisicasOrdenadas = computed(() => {
+    return [...this.capasFisicas].sort((a, b) => b.cantidad - a.cantidad);
+  });
   
   private tileLayers: { [key: string]: any } = {
     'Oscuro': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 16, maxZoom: 22 }),
@@ -168,160 +188,144 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
   mapaBaseActual = 'Oscuro';
 
   capasFisicas = [
-    { nombre: 'Calzadas', archivo: 'calzada.fgb', color: '#FF5733', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Puentes', archivo: 'puente.fgb', color: '#DC143C', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Túneles', archivo: 'tunel.fgb', color: '#FF69B4', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Estaciones de Peaje', archivo: 'estacion_peaje.fgb', color: '#FFFF00', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Estaciones de Pesaje', archivo: 'estacion_pesaje.fgb', color: '#FF4500', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Ciclorruta', archivo: 'ciclorruta.fgb', color: '#00FF00', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Muros', archivo: 'muro.fgb', color: '#8A2BE2', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'CCO', archivo: 'cco.fgb', color: '#FF00FF', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Bermas', archivo: 'berma.fgb', color: '#FFD700', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Cunetas', archivo: 'cuneta.fgb', color: '#00FFFF', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Defensa Vial', archivo: 'defensa_vial.fgb', color: '#FF1493', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Dispositivos ITS', archivo: 'dispositivo_its.fgb', color: '#9400D3', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Luminarias', archivo: 'luminarias.fgb', color: '#7FFF00', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Señales Verticales', archivo: 'senal_vertical.fgb', color: '#1E90FF', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Separador', archivo: 'separador.fgb', color: '#32CD32', visible: true, instance: null as any, cantidad: 0 },
-    { nombre: 'Zonas de servicio', archivo: 'zona_servicio.fgb', color: '#FFA500', visible: true, instance: null as any, cantidad: 0 }
+    { nombre: 'Calzadas', visible: true, instance: null as any, color: '#FF3B30', cantidad: 0, tipo: 'line' },
+    { nombre: 'Puentes', visible: true, instance: null as any, color: '#FF2D55', cantidad: 0, tipo: 'line' },
+    { nombre: 'Túneles', visible: true, instance: null as any, color: '#AF52DE', cantidad: 0, tipo: 'line' },
+    { nombre: 'Estaciones de Peaje', visible: true, instance: null as any, color: '#FFCC00', cantidad: 0, tipo: 'point' },
+    { nombre: 'Estaciones de Pesaje', visible: true, instance: null as any, color: '#FF9500', cantidad: 0, tipo: 'point' },
+    { nombre: 'Ciclorruta', visible: false, instance: null as any, color: '#34C759', cantidad: 0, tipo: 'line' },
+    { nombre: 'Muros', visible: false, instance: null as any, color: '#5856D6', cantidad: 0, tipo: 'line' },
+    { nombre: 'CCO', visible: true, instance: null as any, color: '#FF00FF', cantidad: 0, tipo: 'point' },
+    { nombre: 'Bermas', visible: true, instance: null as any, color: '#FFD60A', cantidad: 0, tipo: 'point' },
+    { nombre: 'Cunetas', visible: true, instance: null as any, color: '#00FFFF', cantidad: 0, tipo: 'line' },
+    { nombre: 'Defensa Vial', visible: false, instance: null as any, color: '#FF1493', cantidad: 0, tipo: 'line' },
+    { nombre: 'Dispositivos ITS', visible: true, instance: null as any, color: '#8A2BE2', cantidad: 0, tipo: 'point' },
+    { nombre: 'Luminarias', visible: true, instance: null as any, color: '#7FFF00', cantidad: 0, tipo: 'point' },
+    { nombre: 'Señales Verticales', visible: true, instance: null as any, color: '#1E90FF', cantidad: 0, tipo: 'point' },
+    { nombre: 'Separador', visible: false, instance: null as any, color: '#00FF7F', cantidad: 0, tipo: 'line' }
   ];
 
-  constructor(private http: HttpClient, private titleService: Title) {}
-
-  ngOnInit() {
+  constructor(private http: HttpClient, private title: Title) {
     const urlParams = new URLSearchParams(window.location.search);
     const proyectoId = urlParams.get('proyecto') || 'app-buga-buenaventura'; 
     this.baseUrl = `https://raw.githubusercontent.com/NicolasPlataANI/ani-datos-gis/main/${proyectoId}`;
-    this.titleService.setTitle(`Inventario - ${proyectoId}`);
+  }
 
+  ngOnInit() {
     this.http.get(`${this.baseUrl}/info_proyecto.json`).pipe(catchError(() => of(null))).subscribe({
       next: (data: any) => {
-        if (!data) return;
-        const epoch = data.fecha_avance?.["0"];
-        this.info.set({
-          nombre: data.nombre?.["0"], modo: data.modo?.["0"], etapa: data.etapa?.["0"], longitud: data.longitud?.["0"],
-          mesAvance: epoch ? new Date(epoch).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : '---'
-        });
+        if (data) {
+          this.info.set(data);
+          this.title.setTitle(`${data.nombre} - Dashboard ANI`);
+        }
       }
     });
   }
 
-  ngAfterViewInit() { this.initMap(); }
-
-  private initMap() {
-    this.map = L.map('map', { zoomControl: false, attributionControl: false, maxZoom: 22 }).setView([4.6, -74.3], 7);
-    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
-    this.tileLayers[this.mapaBaseActual].addTo(this.map);
+  ngAfterViewInit() {
+    this.initMap();
     this.cargarGeometrias();
   }
 
-  private async cargarGeometrias() {
-    this.totalActivos = 0;
-    let bbox = L.latLngBounds([]);
+  private initMap() {
+    this.map = L.map('map', { zoomControl: false, attributionControl: false }).setView([4.5709, -74.2973], 6);
+    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+    this.tileLayers[this.mapaBaseActual].addTo(this.map);
+  }
 
-    // Procesamos todas las capas en paralelo para máxima velocidad
-    const promesas = this.capasFisicas.map(async (capa) => {
+  private async cargarGeometrias() {
+    let bbox = L.latLngBounds([]);
+    
+    await Promise.all(this.capasFisicas.map(async (capa) => {
       try {
-        const url = `${this.baseUrl}/${capa.archivo}`;
+        const url = `${this.baseUrl}/${capa.nombre.toLowerCase().replace(/ /g, '_')}.fgb`;
         const response = await fetch(url);
         if (!response.ok) return;
-
-        // Deserialización binaria usando stream
+        
         const iterador = fgb.geojson.deserialize(response.body!);
-        const features: any[] = [];
+        const features = [];
         for await (const feature of iterador) {
           features.push(feature);
         }
-
+        
         if (features.length > 0) {
           capa.cantidad = features.length;
           this.totalActivos += capa.cantidad;
           
-          const esCapaDePuntos = features.every((f: any) => f.geometry.type === 'Point' || f.geometry.type === 'MultiPoint');
-
-          if (esCapaDePuntos && features.length > 50) {
-            capa.instance = (L as any).markerClusterGroup({
-              chunkedLoading: true,
+          if (capa.tipo === 'point' && features.length > 50) {
+            capa.instance = L.markerClusterGroup({
               iconCreateFunction: (cluster: any) => {
-                return L.divIcon({ 
-                  html: `<div style="background-color:${capa.color}; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; color: white; text-shadow: 1px 1px 2px black; font-weight: bold; border: 2px solid rgba(255,255,255,0.8);">${cluster.getChildCount()}</div>`, 
+                const count = cluster.getChildCount();
+                return L.divIcon({
+                  html: `<div style="background-color: ${capa.color}; color: black; border-radius: 50%; border: 2px solid white; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-family: monospace; box-shadow: 0 4px 6px rgba(0,0,0,0.3); font-size: 11px;">${count}</div>`,
                   className: 'custom-cluster-icon',
                   iconSize: L.point(35, 35)
                 });
               }
             });
-
-            const geoJsonData = L.geoJSON(features as any, {
-              pointToLayer: (f: any, latlng: any) => L.circleMarker(latlng, { radius: 4, color: '#fff', weight: 1, fillColor: capa.color, fillOpacity: 0.9 })
-            });
             
-            (capa.instance as any).addLayer(geoJsonData);
+            const geoJsonData = L.geoJSON(features as any, {
+              pointToLayer: (f: any, latlng: any) => L.circleMarker(latlng, { radius: 5, fillColor: capa.color, color: '#fff', weight: 1, fillOpacity: 0.8 })
+            });
+            capa.instance.addLayer(geoJsonData);
           } else {
             capa.instance = L.geoJSON(features as any, {
-              style: { color: capa.color, weight: 3, opacity: 0.9 },
-              pointToLayer: (f: any, latlng: any) => L.circleMarker(latlng, { radius: 3, color: capa.color, fillColor: capa.color, fillOpacity: 0.8 })
+              style: { color: capa.color, weight: capa.tipo === 'line' ? 4 : 1, opacity: 0.9 },
+              pointToLayer: (f: any, latlng: any) => L.circleMarker(latlng, { radius: 5, fillColor: capa.color, color: '#fff', weight: 1, fillOpacity: 0.8 })
             });
           }
-
+          
           if (capa.visible) {
-            this.map.addLayer(capa.instance as any);
-            bbox.extend((capa.instance as any).getBounds());
+            this.map.addLayer(capa.instance);
+            bbox.extend(capa.instance.getBounds());
           }
         }
       } catch (e) {
         console.error(`Error cargando binario ${capa.nombre}:`, e);
       }
-    });
-
-    await Promise.all(promesas);
+    }));
 
     if (bbox.isValid()) {
       this.initialBounds = bbox;
-      this.map.fitBounds(bbox, { padding: [50, 50] });
+      this.map.fitBounds(bbox, { padding: [20, 20], maxZoom: 14 });
     }
-    this.renderizarGrafico();
-    setTimeout(() => this.cargando.set(false), 300);
-  }
-
-  resetZoom() { if (this.initialBounds) this.map.fitBounds(this.initialBounds, { padding: [50, 50] }); }
-  cambiarBase(nombre: string) {
-    this.map.removeLayer(this.tileLayers[this.mapaBaseActual]);
-    this.tileLayers[nombre].addTo(this.map);
-    this.mapaBaseActual = nombre;
+    
+    this.cargando.set(false);
   }
 
   toggleTema() {
     this.isDark.set(!this.isDark());
-    this.cambiarBase(this.isDark() ? 'Oscuro' : 'Calles');
+    const nuevoBase = this.isDark() ? 'Oscuro' : 'Calles';
+    this.cambiarBase(nuevoBase);
+  }
+
+  cambiarBase(mapa: string) {
+    this.map.removeLayer(this.tileLayers[this.mapaBaseActual]);
+    this.mapaBaseActual = mapa;
+    this.map.addLayer(this.tileLayers[this.mapaBaseActual]);
   }
 
   toggleCapa(capa: any) {
     capa.visible = !capa.visible;
-    if (capa.visible && capa.instance) this.map.addLayer(capa.instance);
-    else if (!capa.visible && capa.instance) this.map.removeLayer(capa.instance);
+    if (capa.instance && this.map) {
+      if (capa.visible) this.map.addLayer(capa.instance);
+      else this.map.removeLayer(capa.instance);
+    }
   }
 
-  toggleTodas(estado: boolean) { this.capasFisicas.forEach(capa => { if (capa.cantidad > 0 && capa.visible !== estado) this.toggleCapa(capa); }); }
-  toggleGrafica() { this.graficaExpandida.set(!this.graficaExpandida()); setTimeout(() => this.chartInstance?.resize(), 50); }
-
-  private renderizarGrafico() {
-    const datosValidos = this.capasFisicas.filter(c => c.cantidad > 0).sort((a, b) => b.cantidad - a.cantidad);
-    if (this.chartInstance) this.chartInstance.destroy();
-    if (datosValidos.length === 0) return;
-    const ctx = document.getElementById('chartActivos') as HTMLCanvasElement;
-    this.chartInstance = new Chart(ctx, {
-      type: 'treemap',
-      data: {
-        datasets: [{
-          tree: datosValidos as any, key: 'cantidad', groups: ['nombre'], spacing: 2, borderWidth: 1, borderRadius: 6, borderColor: 'rgba(0,0,0,0.3)',
-          backgroundColor: (ctx: any) => this.capasFisicas.find(c => c.nombre === ctx.raw?.g)?.color || '#666',
-          labels: {
-            display: true, color: '#000000', font: [{ size: 13, weight: '900' }, { size: 11, weight: 'normal' }],
-            formatter: (ctx: any) => [ctx.raw?.g, `${ctx.raw?.v} pts`]
-          }
-        } as any]
-      },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  toggleTodas(estado: boolean) {
+    this.capasFisicas.forEach(capa => {
+      if (capa.cantidad > 0) {
+        if (capa.visible !== estado) {
+          this.toggleCapa(capa);
+        }
+      }
     });
+  }
+
+  recentrar() {
+    if (this.initialBounds && this.map) {
+      this.map.fitBounds(this.initialBounds, { padding: [20, 20], maxZoom: 14 });
+    }
   }
 }
