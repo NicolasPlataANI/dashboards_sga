@@ -10,7 +10,7 @@ declare const L: any;
 @Component({
   selector: 'app-map-viewer',
   standalone: true,
-  imports: [CommonModule, DecimalPipe, HttpClientModule],
+  imports: [CommonModule, DecimalPipe],
   template: `
     <div [style.backgroundColor]="isDark() ? '#121212' : '#FFF9C4'" 
          [style.color]="isDark() ? '#e2e8f0' : '#1e293b'"
@@ -125,11 +125,11 @@ declare const L: any;
       <section 
         [style.backgroundColor]="isDark() ? '#1F1F1F' : '#FFFDE7'"
         [style.borderColor]="isDark() ? '#333' : '#FBC02D'"
-        class="border-t flex-shrink-0 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.3)] transition-all duration-300 flex flex-col relative z-[60] h-48">
+        class="border-t flex-shrink-0 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.3)] transition-all duration-300 flex flex-col relative z-[60] max-h-[35vh]">
         
-        <div class="p-3 overflow-y-hidden flex flex-col justify-center h-full">
+        <div class="p-4 overflow-y-auto w-full custom-scrollbar">
           <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 auto-rows-max">
-            @for (capa of capasFisicasOrdenadas(); track capa.nombre) {
+            @for (capa of capasFisicasOrdenadas; track capa.nombre) {
               <div class="rounded-xl p-3 border relative overflow-hidden transition-colors"
                    [style.backgroundColor]="isDark() ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'"
                    [style.borderColor]="isDark() ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'">
@@ -164,9 +164,9 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
   totalActivos = 0;
   baseUrl = '';
   
-  capasFisicasOrdenadas = computed(() => {
+  get capasFisicasOrdenadas() {
     return [...this.capasFisicas].sort((a, b) => b.cantidad - a.cantidad);
-  });
+  }
   
   private tileLayers: { [key: string]: any } = {
     'Oscuro': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 16, maxZoom: 22 }),
@@ -175,7 +175,7 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
   };
   mapaBaseActual = 'Oscuro';
 
-  capasFisicas = [
+  capasCarretero = [
     { nombre: 'Calzadas', archivo: 'calzada.fgb', color: '#FF5733', visible: true, instance: null as any, cantidad: 0 },
     { nombre: 'Puentes', archivo: 'puente.fgb', color: '#DC143C', visible: true, instance: null as any, cantidad: 0 },
     { nombre: 'Túneles', archivo: 'tunel.fgb', color: '#FF69B4', visible: true, instance: null as any, cantidad: 0 },
@@ -194,9 +194,44 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
     { nombre: 'Zonas de servicio', archivo: 'zona_servicio.fgb', color: '#FFA500', visible: true, instance: null as any, cantidad: 0 }
   ];
 
+  capasFerreo = [
+    { nombre: 'Abscisas', archivo: 'MfAbscisa.fgb', color: '#FF5733', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Alcantarillas', archivo: 'MfAlcantarilla.fgb', color: '#1E90FF', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Bodegas', archivo: 'MfBodega.fgb', color: '#00FF00', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Box Culver', archivo: 'MfBoxCulver.fgb', color: '#DC143C', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Campamentos', archivo: 'MfCampamento.fgb', color: '#FFD700', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Carriles', archivo: 'MfCarril.fgb', color: '#8A2BE2', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Casetas', archivo: 'MfCaseta.fgb', color: '#FF69B4', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Cerramientos', archivo: 'MfCerramiento.fgb', color: '#FF4500', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Cunetas', archivo: 'MfCuneta.fgb', color: '#00FFFF', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Eje Vía Férrea', archivo: 'MfEjeViaFerrea.fgb', color: '#FF00FF', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Estaciones', archivo: 'MfEstacion.fgb', color: '#FF1493', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Fin de Vía', archivo: 'MfFinVia.fgb', color: '#9400D3', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Franja Admin ANI', archivo: 'MfFranjaAdminANI.fgb', color: '#7FFF00', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Juego Cambiavía', archivo: 'MfJuegoCambiavia.fgb', color: '#32CD32', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Muro Contención', archivo: 'MfMuroContencion.fgb', color: '#FFA500', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Muro Guarda Balasto', archivo: 'MfMuroGuardaBalasto.fgb', color: '#FF5733', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Pasos a Nivel', archivo: 'MfPasoNivel.fgb', color: '#1E90FF', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'PK', archivo: 'MfPk.fgb', color: '#00FF00', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Puentes', archivo: 'MfPuente.fgb', color: '#DC143C', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Segmentos', archivo: 'MfSegmento.fgb', color: '#FFD700', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Señales', archivo: 'MfSenal.fgb', color: '#8A2BE2', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Silos', archivo: 'MfSilo.fgb', color: '#FF69B4', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Tajeas', archivo: 'MfTajea.fgb', color: '#FF4500', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Talleres', archivo: 'MfTaller.fgb', color: '#00FFFF', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Topes', archivo: 'MfTope.fgb', color: '#FF00FF', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Torres', archivo: 'MfTorre.fgb', color: '#FF1493', visible: true, instance: null as any, cantidad: 0 },
+    { nombre: 'Vías de Acceso', archivo: 'MfViaAcceso.fgb', color: '#9400D3', visible: true, instance: null as any, cantidad: 0 }
+  ];
+
+  capasFisicas: any[] = this.capasCarretero; // Default
+
   constructor(private http: HttpClient, private titleService: Title) {}
 
-  ngOnInit() {
+  private mapReady = false;
+  private metadataReady = false;
+
+  ngOnInit() { 
     const urlParams = new URLSearchParams(window.location.search);
     const proyectoId = urlParams.get('proyecto') || 'app-buga-buenaventura'; 
     this.baseUrl = `https://raw.githubusercontent.com/NicolasPlataANI/ani-datos-gis/main/${proyectoId}`;
@@ -204,12 +239,35 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
 
     this.http.get(`${this.baseUrl}/info_proyecto.json`).pipe(catchError(() => of(null))).subscribe({
       next: (data: any) => {
-        if (!data) return;
-        const epoch = data.fecha_avance?.["0"];
-        this.info.set({
-          nombre: data.nombre?.["0"], modo: data.modo?.["0"], etapa: data.etapa?.["0"], longitud: data.longitud?.["0"],
-          mesAvance: epoch ? new Date(epoch).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : '---'
-        });
+        if (data) {
+          let infoObj = data;
+          if (Array.isArray(data) && data.length > 0) {
+             infoObj = data[0];
+          } else if (data.nombre?.["0"]) {
+             infoObj = {
+               nombre: data.nombre["0"],
+               modo: data.modo?.["0"],
+               etapa: data.etapa?.["0"],
+               longitud: data.longitud?.["0"],
+               fecha_avance: data.fecha_avance?.["0"]
+             };
+          }
+
+          const modo = infoObj.modo || 'Carretero';
+          this.capasFisicas = modo === 'Férreo' ? this.capasFerreo : this.capasCarretero;
+
+          const epoch = infoObj.fecha_avance || infoObj.fecha_extraccion;
+          this.info.set({
+            nombre: infoObj.nombre, 
+            modo: modo, 
+            etapa: infoObj.etapa || '---', 
+            longitud: infoObj.longitud || 0,
+            mesAvance: epoch ? new Date(epoch).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : '---'
+          });
+        }
+        
+        this.metadataReady = true;
+        this.tryLoadGeometries();
       }
     });
   }
@@ -220,7 +278,15 @@ export class MapViewerComponent implements OnInit, AfterViewInit {
     this.map = L.map('map', { preferCanvas: true, zoomControl: false, attributionControl: false, maxZoom: 22 }).setView([4.6, -74.3], 7);
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
     this.tileLayers[this.mapaBaseActual].addTo(this.map);
-    this.cargarGeometrias();
+    
+    this.mapReady = true;
+    this.tryLoadGeometries();
+  }
+
+  private tryLoadGeometries() {
+    if (this.mapReady && this.metadataReady) {
+      this.cargarGeometrias();
+    }
   }
 
   private async cargarGeometrias() {

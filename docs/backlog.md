@@ -19,6 +19,14 @@ A continuación se listan las historias de usuario y tareas de mejora propuestas
 * **[TASK-03] Automatización de despliegue (CI/CD)** (✅ Completada)
   * **Descripción:** Configurar GitHub Actions utilizando la dependencia `angular-cli-ghpages` para compilar y desplegar automáticamente en GitHub Pages cada vez que se haga un push a `main`.
 
+* **[TASK-08] Refactorización Project List para Proyectos Férreos** (✅ Completada)
+  * **Descripción:** Modificar `agruparPorMes` y la vista en `ProjectListComponent` para sub-agrupar los proyectos por "modo" (Férreo vs Carretero) e imprimir estos subtítulos.
+  * **Justificación:** Requerimiento para soportar y diferenciar visualmente proyectos férreos como CBB.
+
+* **[TASK-09] Adaptación Map Viewer para Capas Férreas** (✅ Completada)
+  * **Descripción:** Hacer dinámica la carga de capas en `map-viewer.component.ts` dependiendo del `modo` del proyecto.
+  * **Justificación:** Los proyectos férreos usan capas distintas (Mf*) a los carreteros.
+
 ## Media Prioridad
 
 * **[TASK-04] Clustering de marcadores en mapa** (✅ Completada)

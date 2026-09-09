@@ -74,22 +74,31 @@ import { TranslatePipe } from './translate.pipe';
               <span [style.backgroundColor]="isDark() ? '#2d1b0e' : '#F57C00'" class="flex-1 h-px opacity-30"></span>
             </h2>
 
-            <div class="grid gap-4">
-              @for (p of grupo.proyectos; track p.nombre) {
-                <div [style.backgroundColor]="isDark() ? '#2d1b0e' : '#FFF3E0'"
-                     [style.borderColor]="isDark() ? '#d35400' : '#EF6C00'"
-                     class="border p-6 rounded-2xl flex justify-between items-center hover:scale-[1.01] transition-all group shadow-sm">
-                  <h3 [class]="isDark() ? 'text-white' : 'text-slate-800'" class="text-lg font-bold leading-tight uppercase">
-                    {{ p.nombre }}
-                  </h3>
-                  <a [href]="'visor?proyecto=' + p.nombre" 
-                     [style.backgroundColor]="isDark() ? '#d35400' : '#EF6C00'"
-                     class="text-white px-6 py-2 rounded-lg font-black text-xs uppercase hover:brightness-110 active:scale-95 transition-all flex-shrink-0 shadow-md">
-                    {{ 'projects.access' | translate }}
-                  </a>
+            @for (modo of grupo.modos; track modo.nombre) {
+              <div class="mb-6 ml-4">
+                <h3 [style.color]="isDark() ? '#d35400' : '#EF6C00'" 
+                    class="text-xs font-bold uppercase tracking-widest mb-4 opacity-80">
+                  PROYECTOS {{ modo.nombre }}S
+                </h3>
+                
+                <div class="grid gap-4">
+                  @for (p of modo.proyectos; track p.nombre) {
+                    <div [style.backgroundColor]="isDark() ? '#2d1b0e' : '#FFF3E0'"
+                         [style.borderColor]="isDark() ? '#d35400' : '#EF6C00'"
+                         class="border p-6 rounded-2xl flex justify-between items-center hover:scale-[1.01] transition-all group shadow-sm">
+                      <h3 [class]="isDark() ? 'text-white' : 'text-slate-800'" class="text-lg font-bold leading-tight uppercase">
+                        {{ p.nombre }}
+                      </h3>
+                      <a [href]="'visor?proyecto=' + p.nombre" 
+                         [style.backgroundColor]="isDark() ? '#d35400' : '#EF6C00'"
+                         class="text-white px-6 py-2 rounded-lg font-black text-xs uppercase hover:brightness-110 active:scale-95 transition-all flex-shrink-0 shadow-md">
+                        {{ 'projects.access' | translate }}
+                      </a>
+                    </div>
+                  }
                 </div>
-              }
-            </div>
+              </div>
+            }
           </div>
         }
       </div>
@@ -138,10 +147,22 @@ export class ProjectListComponent implements OnInit {
   private agruparPorMes(data: any[]): any[] {
     const grupos = data.reduce((acc, p) => {
       const mes = p.mes || 'Sin Fecha';
-      if (!acc[mes]) acc[mes] = [];
-      acc[mes].push(p);
+      const modo = p.modo || 'Carretero';
+      
+      if (!acc[mes]) acc[mes] = {};
+      if (!acc[mes][modo]) acc[mes][modo] = [];
+      
+      acc[mes][modo].push(p);
       return acc;
-    }, {} as { [key: string]: any[] });
-    return Object.keys(grupos).map(mes => ({ mes, proyectos: grupos[mes] }));
+    }, {} as { [key: string]: { [key: string]: any[] } });
+
+    return Object.keys(grupos).map(mes => {
+      const modosObject = grupos[mes];
+      const modosArray = Object.keys(modosObject).map(modo => ({
+        nombre: modo,
+        proyectos: modosObject[modo]
+      }));
+      return { mes, modos: modosArray };
+    });
   }
 }

@@ -36,11 +36,12 @@ describe('ProjectListComponent', () => {
     req.flush([]);
   });
 
-  it('debe agrupar los proyectos por mes', () => {
+  it('debe agrupar los proyectos por mes y por modo', () => {
     const mockData = [
-      { nombre: 'P1', mes: 'Enero 2024' },
-      { nombre: 'P2', mes: 'Enero 2024' },
-      { nombre: 'P3' } // Proyecto sin mes (debe ir a 'Sin Fecha')
+      { nombre: 'P1', mes: 'Enero 2024', modo: 'Férreo' },
+      { nombre: 'P2', mes: 'Enero 2024', modo: 'Carretero' },
+      { nombre: 'P3', mes: 'Enero 2024' }, // fallback a Carretero
+      { nombre: 'P4' } // Proyecto sin mes (debe ir a 'Sin Fecha' y Carretero por defecto)
     ];
 
     const req = httpMock.expectOne('https://raw.githubusercontent.com/NicolasPlataANI/ani-datos-gis/main/proyectos.json');
@@ -48,10 +49,23 @@ describe('ProjectListComponent', () => {
 
     const agrupados = component.proyectosAgrupados();
     expect(agrupados.length).toBe(2);
+    
+    // Enero 2024
     expect(agrupados[0].mes).toBe('Enero 2024');
-    expect(agrupados[0].proyectos.length).toBe(2);
+    expect(agrupados[0].modos.length).toBe(2); // Férreo y Carretero
+    
+    const ferreosEnero = agrupados[0].modos.find((m: any) => m.nombre === 'Férreo');
+    expect(ferreosEnero.proyectos.length).toBe(1);
+    expect(ferreosEnero.proyectos[0].nombre).toBe('P1');
+    
+    const carreterosEnero = agrupados[0].modos.find((m: any) => m.nombre === 'Carretero');
+    expect(carreterosEnero.proyectos.length).toBe(2); // P2 y P3
+    
+    // Sin Fecha
     expect(agrupados[1].mes).toBe('Sin Fecha');
-    expect(agrupados[1].proyectos.length).toBe(1);
+    expect(agrupados[1].modos.length).toBe(1);
+    expect(agrupados[1].modos[0].nombre).toBe('Carretero');
+    expect(agrupados[1].modos[0].proyectos.length).toBe(1);
   });
 
   it('debe alternar entre tema claro y oscuro', () => {
@@ -70,9 +84,9 @@ describe('ProjectListComponent', () => {
 
   it('debe filtrar los proyectos por nombre al realizar una búsqueda', () => {
     const mockData = [
-      { nombre: 'Autopista Norte', mes: 'Enero 2024' },
-      { nombre: 'Autopista Sur', mes: 'Febrero 2024' },
-      { nombre: 'Puente Buga', mes: 'Enero 2024' }
+      { nombre: 'Autopista Norte', mes: 'Enero 2024', modo: 'Carretero' },
+      { nombre: 'Autopista Sur', mes: 'Febrero 2024', modo: 'Carretero' },
+      { nombre: 'Tren Buga', mes: 'Enero 2024', modo: 'Férreo' }
     ];
 
     const req = httpMock.expectOne('https://raw.githubusercontent.com/NicolasPlataANI/ani-datos-gis/main/proyectos.json');
@@ -87,15 +101,16 @@ describe('ProjectListComponent', () => {
     
     agrupados = component.proyectosAgrupados();
     expect(agrupados.length).toBe(2);
-    expect(agrupados[0].proyectos.length).toBe(1); // Norte
-    expect(agrupados[1].proyectos.length).toBe(1); // Sur
+    expect(agrupados[0].modos[0].proyectos.length).toBe(1); // Norte
+    expect(agrupados[1].modos[0].proyectos.length).toBe(1); // Sur
 
     // Filtro más estricto
     component.actualizarBusqueda({ target: { value: 'Buga' } } as any);
     agrupados = component.proyectosAgrupados();
     expect(agrupados.length).toBe(1);
     expect(agrupados[0].mes).toBe('Enero 2024');
-    expect(agrupados[0].proyectos[0].nombre).toBe('Puente Buga');
+    expect(agrupados[0].modos[0].nombre).toBe('Férreo');
+    expect(agrupados[0].modos[0].proyectos[0].nombre).toBe('Tren Buga');
   });
 
   it('debe manejar errores en la petición de proyectos mostrando un feedback visual', () => {

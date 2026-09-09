@@ -9,6 +9,16 @@ const mapContainer = document.createElement('div');
 mapContainer.id = 'map';
 document.body.appendChild(mapContainer);
 
+(globalThis as any).L = {
+  tileLayer: () => ({ addTo: () => {} }),
+  map: () => {
+    const m = { setView: () => m, addLayer: () => m, removeLayer: () => m, remove: () => {} };
+    return m;
+  },
+  control: { zoom: () => ({ addTo: () => {} }) },
+  latLngBounds: () => ({ extend: () => {}, isValid: () => false })
+};
+
 describe('MapViewerComponent', () => {
   let component: MapViewerComponent;
   let fixture: ComponentFixture<MapViewerComponent>;
@@ -22,7 +32,7 @@ describe('MapViewerComponent', () => {
 
     // Mockeamos los parámetros de la URL para inicializar el proyecto
     Object.defineProperty(window, 'location', {
-      value: { search: '?proyecto=test-project' },
+      value: { search: '?proyecto=app-buga-buenaventura' },
       writable: true
     });
 
@@ -50,9 +60,9 @@ describe('MapViewerComponent', () => {
 
   it('debe crear el componente y solicitar metadatos del proyecto', () => {
     expect(component).toBeTruthy();
-    expect(component.baseUrl).toContain('test-project');
+    expect(component.baseUrl).toContain('app-buga-buenaventura');
 
-    const req = httpMock.expectOne('https://raw.githubusercontent.com/NicolasPlataANI/ani-datos-gis/main/test-project/info_proyecto.json');
+    const req = httpMock.expectOne('https://raw.githubusercontent.com/NicolasPlataANI/ani-datos-gis/main/app-buga-buenaventura/info_proyecto.json');
     expect(req.request.method).toBe('GET');
     
     req.flush({
@@ -65,7 +75,7 @@ describe('MapViewerComponent', () => {
   });
 
   it('debe cambiar correctamente entre el tema claro y oscuro y su mapa base asociado', () => {
-    const req = httpMock.expectOne('https://raw.githubusercontent.com/NicolasPlataANI/ani-datos-gis/main/test-project/info_proyecto.json');
+    const req = httpMock.expectOne('https://raw.githubusercontent.com/NicolasPlataANI/ani-datos-gis/main/app-buga-buenaventura/info_proyecto.json');
     req.flush({});
 
     // Estado inicial
@@ -84,7 +94,7 @@ describe('MapViewerComponent', () => {
   });
 
   it('debe cambiar la visibilidad de las capas usando toggleTodas', () => {
-    const req = httpMock.expectOne('https://raw.githubusercontent.com/NicolasPlataANI/ani-datos-gis/main/test-project/info_proyecto.json');
+    const req = httpMock.expectOne('https://raw.githubusercontent.com/NicolasPlataANI/ani-datos-gis/main/app-buga-buenaventura/info_proyecto.json');
     req.flush({});
 
     // Simulamos que la primera capa (Calzadas) tiene elementos para que no esté bloqueada
