@@ -32,8 +32,12 @@
    - El sistema debe cargar y decodificar los archivos de geometrías (FlatGeobuf) en paralelo empleando flujos (streams) para optimizar la velocidad y el rendimiento en el navegador.
 2. **RNF-02: Arquitectura y Tecnologías**
    - La aplicación debe ser desarrollada como una Single Page Application (SPA) utilizando Angular 21 (o superior) en modo Standalone Components.
-3. **RNF-03: Diseño Interfaz**
+3. **RNF-03: Diseño de Interfaz e Íconos**
    - La interfaz debe estar construida con Tailwind CSS, garantizando una correcta adaptabilidad y estilado en componentes, incluyendo paletas de colores asociadas a temas claro/oscuro.
+   - El sistema debe emplear la librería `Google Material Symbols Outlined` para la iconografía, descartando el uso de emojis de sistema para evitar inconsistencias visuales multiplataforma.
 4. **RNF-04: Dependencias Principales**
    - El mapa debe implementarse con `leaflet`.
    - La lectura de datos geográficos vectoriales utilizará `flatgeobuf`.
+5. **RNF-05: Despliegue y CI/CD**
+   - El código debe construirse y publicarse automáticamente en GitHub Pages usando GitHub Actions.
+   - Para soportar el enrutamiento interno de Angular (SPA) sin arrojar errores 404 al recargar, el pipeline debe generar un archivo de fallback `404.html` que sea un clon del `index.html`.

@@ -20,6 +20,8 @@ Este archivo consolida las directrices y reglas clave de desarrollo para este pr
 ## 3. Reglas de Negocio y UX Clave
 - **Tema Visual:** La aplicación debe inicializar siempre en **Modo Oscuro** por defecto (modificado tras probar el nuevo mapa de Esri).
 - **Mapa Base:** En modo claro, el mapa base por defecto es "Calles" (OpenStreetMap). En modo oscuro, es "Oscuro" (Esri Dark Gray Base, sin atribuciones visibles).
+- **Diseño de Interfaz:** Se deben usar íconos de la librería estándar `Google Material Symbols (Outlined)` (cargada globalmente) en lugar de emojis de sistema, con el fin de garantizar consistencia multiplataforma.
+- **Despliegue y CI/CD:** La aplicación se publica en GitHub Pages empleando un workflow nativo de GitHub Actions (`actions/deploy-pages`). Para garantizar el correcto enrutamiento SPA (Angular Router) al refrescar el navegador, el pipeline de compilación se encarga de clonar el `index.html` en un archivo `404.html` como fallback de rutas.
 - **Consumo de Datos:** Los datos (proyectos.json, geo-capas) se consumen de manera estática desde GitHub, no hay backend tradicional.
 - **Múltiples Modos de Transporte:** El sistema soporta proyectos de modo **Carretero** (default) y **Férreo** (con capas de la convención `Mf*`). Los dashboards diferencian dinámicamente las geometrías y menús según el atributo `modo`.
 - **Visualización de KPIs e Inventario:** Se emplean Tarjetas de Métricas (KPI Cards) diseñadas con CSS Grid (estilo Glassmorphism). El contenedor se adapta de forma fluida (h-auto) a los recuentos (ej. carreteros con 16 capas) y activa scroll vertical (overflow-y-auto) si las tarjetas exceden el alto máximo definido, para mantener un layout equilibrado con múltiples capas (ej. férreos con 27 capas).

@@ -14,7 +14,7 @@
 **Quiero** tener un botón para alternar entre el modo claro y oscuro en todas las pantallas,
 **Para** ajustar la apariencia de la interfaz a mi nivel de confort visual y la iluminación de mi entorno.
 * **Criterios de Aceptación:**
-  - Los colores de fondo, paneles y texto cambian dinámicamente al presionar el botón 🌞/🌚.
+  - Los colores de fondo, paneles y texto cambian dinámicamente al presionar el botón correspondiente (ícono de `light_mode` o `dark_mode` de Material Symbols).
   - En el visor de mapas, el mapa base se adapta automáticamente al tema escogido (Oscuro -> Esri Dark Gray, Claro -> OpenStreetMap).
 
 ## HU-03: Visualizar metadatos de un proyecto
