@@ -35,7 +35,9 @@ jobs:
         run: npm run test -- --watch=false
 
       - name: Build
-        run: npx ng build --base-href=/dashboards_sga/
+        run: |
+          npx ng build --base-href=/dashboards_sga/
+          cp dist/dashboards_general/browser/index.html dist/dashboards_general/browser/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
