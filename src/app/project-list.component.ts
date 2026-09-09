@@ -39,14 +39,18 @@ import { TranslatePipe } from './translate.pipe';
             <button (click)="toggleTema()" 
                     [style.backgroundColor]="isDark() ? '#d35400' : '#EF6C00'"
                     class="px-4 py-2 rounded-xl text-xl border-none shadow-lg cursor-pointer transition-transform active:scale-90 text-white">
-              {{ isDark() ? '🌞' : '🌚' }}
+              @if (isDark()) {
+                <span class="material-symbols-outlined text-[18px]">light_mode</span>
+              } @else {
+                <span class="material-symbols-outlined text-[18px]">dark_mode</span>
+              }
             </button>
           </div>
         </header>
 
         @if (errorCarga()) {
           <div class="bg-red-500/10 border border-red-500 text-red-600 p-6 rounded-xl mb-8 flex flex-col items-center justify-center text-center">
-            <span class="text-3xl mb-2">⚠️</span>
+            <span class="material-symbols-outlined text-4xl mb-2 text-amber-500">warning</span>
             <h2 class="text-lg font-bold">{{ 'projects.error_title' | translate }}</h2>
             <p class="text-sm opacity-80 mt-1">{{ 'projects.error_desc' | translate }}</p>
           </div>

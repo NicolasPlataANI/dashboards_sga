@@ -33,7 +33,11 @@ declare const L: any;
               <button (click)="toggleTema()" 
                       [style.backgroundColor]="isDark() ? '#333' : '#F9A825'"
                       class="px-3 py-1.5 rounded-lg text-lg border-none shadow-sm cursor-pointer transition-transform active:scale-90">
-                {{ isDark() ? '🌞' : '🌚' }}
+                @if (isDark()) {
+                  <span class="material-symbols-outlined text-[18px]">light_mode</span>
+                } @else {
+                  <span class="material-symbols-outlined text-[18px]">dark_mode</span>
+                }
               </button>
             </div>
             <p [style.color]="isDark() ? '#FFCD00' : '#F9A825'" class="text-[10px] uppercase tracking-widest font-bold mb-1 mt-2">Proyecto ANI</p>
@@ -75,8 +79,8 @@ declare const L: any;
           <div [style.borderColor]="isDark() ? '#333' : '#FBC02D'" class="p-4 border-b">
             <button (click)="resetZoom()" 
                     [style.backgroundColor]="isDark() ? '#333' : '#F9A825'"
-                    class="w-full py-2 text-[10px] font-black uppercase rounded border border-zinc-500/30 text-white cursor-pointer hover:brightness-110 active:scale-95 transition-all">
-              📍 Recentrar Mapa
+                    class="w-full py-2 flex items-center justify-center gap-2 text-[10px] font-black uppercase rounded border border-zinc-500/30 text-white cursor-pointer hover:brightness-110 active:scale-95 transition-all">
+              <span class="material-symbols-outlined text-[14px]">my_location</span> Recentrar Mapa
             </button>
           </div>
 
