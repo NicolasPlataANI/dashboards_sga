@@ -9,8 +9,8 @@ Al cargar un proyecto en el visor de mapa, el sistema intentará descargar todas
 **RN-03: Restricción de Interacción con Capas Vacías**
 Las capas de inventario GIS que posean una cantidad de "0 pts" deben deshabilitarse en la interfaz del usuario. El usuario no podrá intentar marcar o desmarcar una capa vacía.
 
-**RN-04: Renderizado de Gráfico Treemap**
-El gráfico estadístico de Treemap solo debe renderizarse utilizando datos de capas que contengan elementos (cantidad > 0). Las capas sin datos deben ser excluidas del diagrama para evitar distorsiones o errores en la gráfica.
+**RN-04: Renderizado de Tarjetas KPI**
+Las tarjetas de métricas del panel inferior deben renderizarse para todas las capas aplicables al modo de transporte del proyecto. Si una capa tiene elementos, el recuento debe indicarse; si tiene "0", se debe mantener visible para indicar la ausencia de dicho activo en el proyecto.
 
 **RN-05: Ajuste de Mapa (Zoom Extent)**
 Cuando se cargan las capas de un proyecto, el mapa debe centrarse automáticamente utilizando un `Bounding Box` (BBox) que abarque todos los elementos geográficos cargados con éxito, aplicando un padding (margen) para asegurar que ningún punto quede oculto detrás de los paneles laterales.
@@ -19,3 +19,6 @@ Cuando se cargan las capas de un proyecto, el mapa debe centrarse automáticamen
 Si el usuario se encuentra en el visor y cambia el tema de la aplicación (Claro/Oscuro):
 - Si cambia a tema Oscuro, el mapa base debe establecerse en "Oscuro".
 - Si cambia a tema Claro, el mapa base debe establecerse en "Calles".
+
+**RN-07: Clasificación por Modo de Transporte**
+Los proyectos se clasifican según su atributo `modo`. Si un proyecto tiene el modo "Férreo", el sistema debe listar y cargar únicamente las capas geográficas correspondientes a la red férrea (convención `Mf*`). Si el modo es "Carretero" o no se especifica, el sistema aplicará por defecto las capas de red vial carretera. El panel de selección de proyectos debe segregar visualmente los proyectos bajo estos dos modos para un mismo mes de avance.

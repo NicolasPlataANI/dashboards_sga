@@ -13,8 +13,8 @@
 5. **RF-05: Gestión de Inventario GIS (Capas Físicas)**
    - El sistema debe listar las capas de infraestructura del proyecto (ej. Calzadas, Puentes, Túneles, Peajes).
    - El sistema debe permitir al usuario encender (mostrar) y apagar (ocultar) estas capas de manera individual o masiva ("Todo" o "Nada").
-6. **RF-06: Representación de Estadísticas (Treemap)**
-   - El sistema debe mostrar un gráfico tipo Treemap que represente visualmente la proporción de elementos por cada capa física del inventario GIS, ordenados de mayor a menor cantidad.
+6. **RF-06: Representación de Estadísticas (Tarjetas KPI)**
+   - El sistema debe mostrar Tarjetas de Métricas (KPI Cards) que indiquen la cantidad de elementos detectados para cada capa física del inventario GIS, ordenados de mayor a menor cantidad. El contenedor de estas tarjetas debe adaptarse de forma dinámica para prevenir roturas en el layout si existen muchas capas.
 7. **RF-07: Información del Proyecto**
    - El visor de mapa debe mostrar en un panel lateral información clave del proyecto: Nombre, Modo, Etapa, Longitud y Mes de Avance.
 8. **RF-08: Modos de Visualización (Temas)**
@@ -23,6 +23,8 @@
    - El sistema debe proveer una barra de búsqueda de texto libre que filtre reactivamente el listado de proyectos por su nombre.
 10. **RF-10: Internacionalización (i18n)**
     - El sistema debe estar preparado para soportar múltiples idiomas (al menos Español e Inglés), permitiendo al usuario cambiar el idioma de la interfaz dinámicamente.
+11. **RF-11: Múltiples Modos de Transporte (Carretero y Férreo)**
+    - El sistema debe categorizar dinámicamente los proyectos bajo diferentes modos de infraestructura (ej. "Carretero", "Férreo") en el menú de listado, y cargar las capas geográficas correspondientes a dicho modo en el visor (ej. capas convencionales para Carreteros, y capas Mf* para Férreos).
 
 ## Requerimientos No Funcionales (RNF)
 
@@ -34,5 +36,4 @@
    - La interfaz debe estar construida con Tailwind CSS, garantizando una correcta adaptabilidad y estilado en componentes, incluyendo paletas de colores asociadas a temas claro/oscuro.
 4. **RNF-04: Dependencias Principales**
    - El mapa debe implementarse con `leaflet`.
-   - Las gráficas deben implementarse con `chart.js` y `chartjs-chart-treemap`.
    - La lectura de datos geográficos vectoriales utilizará `flatgeobuf`.

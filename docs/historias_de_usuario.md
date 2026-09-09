@@ -43,11 +43,19 @@
   - Hay botones para seleccionar "Oscuro", "Satélite" y "Calles".
   - Al cambiar, se reemplaza la capa base actual (TileLayer) en el visor de Leaflet.
 
-## HU-06: Visualizar resumen de activos en Treemap
+## HU-06: Visualizar resumen de activos en Tarjetas KPI
 **Como** usuario,
-**Quiero** ver un gráfico Treemap que muestre las cantidades de los distintos tipos de infraestructura del proyecto,
-**Para** comprender de forma rápida qué tipo de activos son más abundantes.
+**Quiero** ver Tarjetas de Métricas (KPI Cards) que muestren las cantidades de los distintos tipos de infraestructura del proyecto en el panel inferior,
+**Para** comprender de forma rápida qué tipo de activos son más abundantes sin que una diferencia en magnitudes afecte la lectura.
 * **Criterios de Aceptación:**
-  - El gráfico se renderiza en un panel inferior.
-  - Muestra un bloque por cada capa que tiene `cantidad > 0`.
-  - Se incluye un botón "Expandir" / "Reducir" para poder ver el gráfico a mayor tamaño sobre el mapa.
+  - Las tarjetas se renderizan en el panel inferior.
+  - El diseño debe adaptarse a una grilla, y de exceder una cantidad de filas razonable, el contenedor debe poder deslizarse verticalmente (scroll).
+  - Las tarjetas vacías (0 pts) permanecen visibles y legibles.
+
+## HU-07: Navegar infraestructura férrea
+**Como** usuario del sistema,
+**Quiero** que el listado agrupe por modo Carretero o Férreo, y que el mapa cargue geometrías propias de la industria ferroviaria si el proyecto es un corredor férreo,
+**Para** revisar adecuadamente la infraestructura que no es vial (estaciones, carriles férreos, cajas culver, etc.).
+* **Criterios de Aceptación:**
+  - El panel principal separa los proyectos mediante los títulos correspondientes ("PROYECTOS CARRETEROS", "PROYECTOS FÉRREOS").
+  - Si el proyecto es férreo, el panel de Inventario y las KPI cards mostrarán elementos como "Abscisas", "Eje Vía Férrea", etc., y descargarán sus correspondientes archivos `.fgb`.
